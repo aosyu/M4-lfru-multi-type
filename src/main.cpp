@@ -19,11 +19,6 @@ struct String
     {
         return data == other;
     }
-
-    friend std::ostream & operator<<(std::ostream & strm, const String & str)
-    {
-        return strm << str.data;
-    }
 };
 
 using TestCache = Cache<std::string, String, AllocatorWithPool>;
