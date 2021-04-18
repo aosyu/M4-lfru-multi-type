@@ -15,7 +15,6 @@ struct String
         : data(key)
     {
     }
-
     bool operator==(const std::string & other) const
     {
         return data == other;
