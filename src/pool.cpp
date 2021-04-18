@@ -1,7 +1,3 @@
-#include "allocator.h"
-
-void f() {}
-
 #include "pool.h"
 
 #include <assert.h>
@@ -17,11 +13,7 @@ namespace pool {
         Pool(const size_t obj_size, const size_t obj_count)
                 : m_obj_size(obj_size), m_storage(obj_size * obj_count), m_used_map(obj_count) {}
 
-        size_t get_obj_size() const {
-            return m_obj_size;
-        }
-
-        void *allocate(size_t n);
+        void *allocate();
 
         void deallocate(const void *ptr, size_t n);
 
@@ -30,38 +22,26 @@ namespace pool {
     private:
         static constexpr size_t npos = static_cast<size_t>(-1);
 
-        size_t find_empty_place(size_t n) const;
+        size_t find_empty_place() const;
 
         const size_t m_obj_size;
         std::vector<std::byte> m_storage;
         std::vector<bool> m_used_map;
     };
 
-    size_t Pool::find_empty_place(const size_t n) const {
+    size_t Pool::find_empty_place() const {
         for (size_t i = 0; i < m_used_map.size(); ++i) {
-            if (m_used_map[i]) {
-                continue;
-            }
-            size_t j = i;
-            for (size_t k = 0; k < n && j < m_used_map.size(); ++k, ++j) {
-                if (m_used_map[j]) {
-                    break;
-                }
-            }
-            if (n == j - i) {
+            if (!m_used_map[i]) {
                 return i;
             }
-            i = j;
         }
         return npos;
     }
 
-    void *Pool::allocate(const size_t n) {
-        const size_t pos = find_empty_place(n);
+    void *Pool::allocate() {
+        const size_t pos = find_empty_place();
         if (pos != npos) {
-            for (size_t i = pos, end = pos + n; i < end; ++i) {
-                m_used_map[i] = true;
-            }
+            m_used_map[pos] = true;
             return &m_storage[pos * m_obj_size];
         }
         throw std::bad_alloc{};
@@ -84,25 +64,15 @@ namespace pool {
 
     bool Pool::contains(const void *ptr) {
         auto b_ptr = static_cast<const std::byte *>(ptr);
-        const auto begin = &m_storage[0];
-        const auto end = &m_storage[m_storage.size() - 1];
-        return begin <= b_ptr && end >= b_ptr;
+        return &m_storage[0] <= b_ptr && &m_storage[m_storage.size() - 1] >= b_ptr;
     }
 
     Pool *create_pool(const size_t obj_size, const size_t obj_count) {
         return new Pool(obj_size, obj_count);
     }
 
-    void destroy_pool(Pool *pool) {
-        delete pool;
-    }
-
-    size_t pool_obj_size(const Pool &pool) {
-        return pool.get_obj_size();
-    }
-
-    void *allocate(Pool &pool, const size_t n) {
-        return pool.allocate(n);
+    void *allocate(Pool &pool) {
+        return pool.allocate();
     }
 
     void deallocate(Pool &pool, const void *ptr, const size_t n) {

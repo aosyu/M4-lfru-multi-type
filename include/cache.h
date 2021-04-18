@@ -46,13 +46,19 @@ private:
     std::list<KeyProvider *> m_low_queue;
 };
 
+template <class Key, class KeyProvider>
+auto find_element(std::list<KeyProvider *> & m_queue, const Key & key)
+{
+    return std::find_if(m_queue.begin(), m_queue.end(), [&key](const KeyProvider * elem) {
+        return *elem == key;
+    });
+}
+
 template <class Key, class KeyProvider, class Allocator>
 template <class T>
 inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
 {
-    auto it = std::find_if(m_top_queue.begin(), m_top_queue.end(), [&key](const KeyProvider * elem) {
-        return *elem == key;
-    });
+    auto it = find_element(m_top_queue, key);
 
     if (it != m_top_queue.end()) {
         while (it != m_top_queue.begin()) {
@@ -61,13 +67,11 @@ inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
         }
     }
     else {
-        it = std::find_if(m_low_queue.begin(), m_low_queue.end(), [&key](const KeyProvider * elem) {
-            return *elem == key;
-        });
+        it = find_element(m_low_queue, key);
 
         if (it != m_low_queue.end()) {
             if (m_top_queue.size() == m_max_top_size) {
-                m_low_queue.push_front(m_top_queue.back()); // begin
+                m_low_queue.push_front(m_top_queue.back());
                 m_top_queue.pop_back();
             }
             m_top_queue.push_front(*it);
@@ -86,7 +90,6 @@ inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
     }
 
     return *dynamic_cast<T *>(m_top_queue.front());
-    //    throw std::bad_alloc{};
 }
 
 template <class Key, class KeyProvider, class Allocator>
