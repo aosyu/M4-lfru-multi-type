@@ -25,7 +25,7 @@ class PoolAllocator
 public:
     PoolAllocator(const std::size_t count, std::initializer_list<std::size_t> sizes)
     {
-        for (size_t cur : sizes) {
+        for (const size_t cur : sizes) {
             pools[cur] = pool::create_pool(cur, count / cur);
         }
     }
@@ -40,7 +40,7 @@ public:
 
     void deallocate(const void * ptr)
     {
-        for (auto pool : pools) {
+        for (const auto pool : pools) {
             if (pool::contains(*pool.second, ptr)) {
                 pool::deallocate(*pool.second, ptr, pool.first);
             }
