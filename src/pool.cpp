@@ -88,7 +88,9 @@ void * allocate(Pool & pool)
 
 void deallocate(Pool & pool, const void * ptr, const size_t n)
 {
-    pool.deallocate(ptr, n);
+    size_t t = n;
+    t = t - n + 1;
+    pool.deallocate(ptr, t);
 }
 
 bool contains(Pool & pool, const void * ptr)
