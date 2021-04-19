@@ -44,7 +44,7 @@ public:
     {
         for (const auto pool : pools) {
             if (pool::contains(*pool.second, ptr)) {
-                pool::deallocate(*pool.second, ptr, pool.first);
+                pool::deallocate(*pool.second, ptr, 1);
             }
         }
     }
