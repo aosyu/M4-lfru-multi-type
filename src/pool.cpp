@@ -97,4 +97,10 @@ bool contains(Pool & pool, const void * ptr)
 {
     return pool.contains(ptr);
 }
+
+void destroy_pool(Pool * pool)
+{
+    delete pool;
+}
+
 } // namespace pool

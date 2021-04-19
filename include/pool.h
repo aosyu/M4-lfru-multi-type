@@ -18,6 +18,8 @@ bool contains(Pool & pool, const void * ptr);
 
 void deallocate(Pool & pool, const void * ptr, std::size_t n);
 
+void destroy_pool(Pool * pool);
+
 } // namespace pool
 
 class PoolAllocator
@@ -44,6 +46,13 @@ public:
             if (pool::contains(*pool.second, ptr)) {
                 pool::deallocate(*pool.second, ptr, pool.first);
             }
+        }
+    }
+
+    virtual ~PoolAllocator()
+    {
+        for (auto pool : pools) {
+            pool::destroy_pool(pool.second);
         }
     }
 
