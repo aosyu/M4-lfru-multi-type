@@ -80,7 +80,7 @@ inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
         }
         else {
             if (m_low_queue.size() == m_max_low_size) {
-                m_alloc.template destroy<T>(m_low_queue.back());
+                m_alloc.template destroy<KeyProvider>(m_low_queue.back());
                 m_low_queue.pop_back();
             }
 

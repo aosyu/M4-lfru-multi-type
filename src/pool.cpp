@@ -60,13 +60,7 @@ void Pool::deallocate(const void * ptr)
     const auto begin = &m_storage[0];
     if (b_ptr >= begin) {
         const size_t offset = (b_ptr - begin) / m_obj_size;
-        assert(((b_ptr - begin) % m_obj_size) == 0);
-        //        if (offset < m_used_map.size()) {
-        //            const size_t end_delete = offset + m_used_map.size() - offset;
-        //            for (size_t i = offset; i < end_delete; ++i) {
         m_used_map[offset] = false;
-        //            }
-        //        }
     }
 }
 
