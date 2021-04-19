@@ -20,7 +20,7 @@ public:
 
     void * allocate();
 
-    void deallocate(const void * ptr, size_t n);
+    void deallocate(const void * ptr);
 
     bool contains(const void * ptr);
 
@@ -54,19 +54,19 @@ void * Pool::allocate()
     throw std::bad_alloc{};
 }
 
-void Pool::deallocate(const void * ptr, const size_t n)
+void Pool::deallocate(const void * ptr)
 {
     auto b_ptr = static_cast<const std::byte *>(ptr);
     const auto begin = &m_storage[0];
     if (b_ptr >= begin) {
         const size_t offset = (b_ptr - begin) / m_obj_size;
         assert(((b_ptr - begin) % m_obj_size) == 0);
-        if (offset < m_used_map.size()) {
-            const size_t end_delete = offset + std::min(n, m_used_map.size() - offset);
-            for (size_t i = offset; i < end_delete; ++i) {
-                m_used_map[i] = false;
-            }
-        }
+        //        if (offset < m_used_map.size()) {
+        //            const size_t end_delete = offset + m_used_map.size() - offset;
+        //            for (size_t i = offset; i < end_delete; ++i) {
+        m_used_map[offset] = false;
+        //            }
+        //        }
     }
 }
 
@@ -86,11 +86,9 @@ void * allocate(Pool & pool)
     return pool.allocate();
 }
 
-void deallocate(Pool & pool, const void * ptr, const size_t n)
+void deallocate(Pool & pool, const void * ptr)
 {
-    size_t t = n;
-    t = t - n + 1;
-    pool.deallocate(ptr, t);
+    pool.deallocate(ptr);
 }
 
 bool contains(Pool & pool, const void * ptr)

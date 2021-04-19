@@ -16,7 +16,7 @@ void * allocate(Pool & pool);
 
 bool contains(Pool & pool, const void * ptr);
 
-void deallocate(Pool & pool, const void * ptr, std::size_t n);
+void deallocate(Pool & pool, const void * ptr);
 
 void destroy_pool(Pool * pool);
 
@@ -44,7 +44,7 @@ public:
     {
         for (const auto pool : pools) {
             if (pool::contains(*pool.second, ptr)) {
-                pool::deallocate(*pool.second, ptr, 1);
+                pool::deallocate(*pool.second, ptr);
             }
         }
     }
