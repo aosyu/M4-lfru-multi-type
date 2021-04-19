@@ -85,11 +85,11 @@ inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
             }
 
             m_low_queue.push_front(m_alloc.template create<T>(key));
-            return *dynamic_cast<T *>(m_low_queue.front());
+            return *static_cast<T *>(m_low_queue.front());
         }
     }
 
-    return *dynamic_cast<T *>(m_top_queue.front());
+    return *static_cast<T *>(m_top_queue.front());
 }
 
 template <class Key, class KeyProvider, class Allocator>
