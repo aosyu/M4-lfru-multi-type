@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <deque>
 #include <list>
 #include <new>
 #include <ostream>
@@ -42,12 +43,12 @@ private:
     const std::size_t m_max_top_size;
     const std::size_t m_max_low_size;
     Allocator m_alloc;
-    std::list<KeyProvider *> m_top_queue;
-    std::list<KeyProvider *> m_low_queue;
+    std::deque<KeyProvider *> m_top_queue;
+    std::deque<KeyProvider *> m_low_queue;
 };
 
 template <class Key, class KeyProvider>
-auto find_element(std::list<KeyProvider *> & m_queue, const Key & key)
+auto find_element(std::deque<KeyProvider *> & m_queue, const Key & key)
 {
     return std::find_if(m_queue.begin(), m_queue.end(), [&key](const KeyProvider * elem) {
         return *elem == key;
@@ -61,10 +62,8 @@ inline T & Cache<Key, KeyProvider, Allocator>::get(const Key & key)
     auto it = find_element(m_top_queue, key);
 
     if (it != m_top_queue.end()) {
-        while (it != m_top_queue.begin()) {
-            const auto old = it--;
-            std::iter_swap(it, old);
-        }
+        m_top_queue.push_front(*it);
+        m_top_queue.erase(it);
     }
     else {
         it = find_element(m_low_queue, key);
