@@ -1,8 +1,8 @@
 #include "pool.h"
 
-#include <assert.h>
 #include <cstddef>
 #include <new>
+#include <set>
 #include <vector>
 
 using std::size_t;
@@ -14,8 +14,11 @@ public:
     Pool(const size_t obj_size, const size_t obj_count)
         : m_obj_size(obj_size)
         , m_storage(obj_size * obj_count)
-        , m_used_map(obj_count)
+        , m_used_map()
     {
+        for (size_t x = 0; x < obj_count; x++) {
+            m_used_map.insert(x);
+        }
     }
 
     void * allocate();
@@ -25,30 +28,16 @@ public:
     bool contains(const void * ptr);
 
 private:
-    static constexpr size_t npos = static_cast<size_t>(-1);
-
-    size_t find_empty_place() const;
-
     const size_t m_obj_size;
     std::vector<std::byte> m_storage;
-    std::vector<bool> m_used_map;
+    std::set<std::size_t> m_used_map;
 };
-
-size_t Pool::find_empty_place() const
-{
-    for (size_t i = 0; i < m_used_map.size(); ++i) {
-        if (!m_used_map[i]) {
-            return i;
-        }
-    }
-    return npos;
-}
 
 void * Pool::allocate()
 {
-    const size_t pos = find_empty_place();
-    if (pos != npos) {
-        m_used_map[pos] = true;
+    if (!m_used_map.empty()) {
+        const size_t pos = *m_used_map.begin();
+        m_used_map.erase(m_used_map.begin());
         return &m_storage[pos * m_obj_size];
     }
     throw std::bad_alloc{};
@@ -59,8 +48,7 @@ void Pool::deallocate(const void * ptr)
     auto b_ptr = static_cast<const std::byte *>(ptr);
     const auto begin = &m_storage[0];
     if (b_ptr >= begin) {
-        const size_t offset = (b_ptr - begin) / m_obj_size;
-        m_used_map[offset] = false;
+        m_used_map.insert((b_ptr - begin) / m_obj_size);
     }
 }
 
